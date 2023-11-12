@@ -5,12 +5,13 @@ const {isLoggedIn} = require("../modileware/index")
 
 
 
-router.put("/select_addition", async (req,res,next) => {
+router.get("/select_addition", async (req,res,next) => {
 
     try{
 
-        const [row,fields] = await pool.query("select *,count(emp_id) from Addition join Payroll using(addition_id)")
-        res.json({deduc:row})
+        const [row,fields] = await pool.query("select * from Addition join Payroll using(addition_id)")
+        const [row1,fields1] = await pool.query("select count(emp_id) from Addition join Payroll using(addition_id)")
+        res.json({deduc:{row,row1}})
 
 
     }catch(err){
@@ -19,7 +20,7 @@ router.put("/select_addition", async (req,res,next) => {
     }
 })
 
-router.put("/insert_addition", async (req,res,next) => {
+router.post("/insert_addition", async (req,res,next) => {
     
     const title = req.body.title;
     const name = req.body.name;
@@ -32,7 +33,7 @@ router.put("/insert_addition", async (req,res,next) => {
     try{
         
         
-        const [row,fields] = await conn.query("insert into Addition(addition_title,addition_name,addition_amount,percent,date) values(?,?,?,?,?,CURRENT_TIMESTAMP)",[title,name,amount,percent])
+        const [row,fields] = await conn.query("insert into Addition(addition_title,addition_name,addition_amount,percent,date) values(?,?,?,?,CURRENT_TIMESTAMP)",[title,name,amount,percent])
 
         if (amount != 0 && percent == 0){
             const [row1,fields1] = await conn.query("update Payroll set netSalary = netSalary+? where emp_id = ?",[amount,id])
